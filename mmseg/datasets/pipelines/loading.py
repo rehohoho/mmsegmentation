@@ -152,3 +152,50 @@ class LoadAnnotations(object):
         repr_str += f'(reduce_zero_label={self.reduce_zero_label},'
         repr_str += f"imdecode_backend='{self.imdecode_backend}')"
         return repr_str
+
+
+@PIPELINES.register_module()
+class LoadAnnotationsFromPalette(LoadAnnotations):
+    """Load annotations for semantic segmentation from palette labels.
+
+    Args:
+        reduce_zero_label (bool): Whether reduce all label value by 1.
+            Usually used for datasets where 0 is background label.
+            Default: False.
+        file_client_args (dict): Arguments to instantiate a FileClient.
+            See :class:`mmcv.fileio.FileClient` for details.
+            Defaults to ``dict(backend='disk')``.
+        imdecode_backend (str): Backend for :func:`mmcv.imdecode`. Default:
+            'pillow'
+    """
+
+    def __init__(self,
+                 palette,
+                 reduce_zero_label=False,
+                 file_client_args=dict(backend='disk'),
+                 imdecode_backend='pillow'):
+        super(LoadAnnotationsFromPalette, self).__init__(
+          reduce_zero_label, file_client_args, imdecode_backend)
+        self.palette = {idx : 1000000 * i + 1000 * j + k for idx, (i, j, k) in enumerate(palette)}
+    
+    def __call__(self, results):
+        """Call function to load multiple types annotations.
+
+        Args:
+            results (dict): Result dict from :obj:`mmseg.CustomDataset`.
+
+        Returns:
+            dict: The dict contains loaded semantic segmentation annotations.
+        """
+        results = super(LoadAnnotationsFromPalette, self).__call__(results)
+        gt_semantic_seg = results['gt_semantic_seg'].astype(np.int32)
+        gt_semantic_seg = 1000000 * gt_semantic_seg[...,0] + 1000 * gt_semantic_seg[...,1] \
+          + gt_semantic_seg[...,2]
+        for class_idx, color in self.palette.items():
+          gt_semantic_seg[gt_semantic_seg == color] = class_idx
+        gt_semantic_seg[gt_semantic_seg > len(self.palette)] = 255
+        results['gt_semantic_seg'] = gt_semantic_seg
+        return results
+
+    def __repr__(self):
+        return super(LoadAnnotationsFromPalette, self).__repr__()
