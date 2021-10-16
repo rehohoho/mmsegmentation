@@ -1,4 +1,7 @@
 # dataset settings
+PALETTE = [[0, 0, 0], [128, 0, 0], [128, 0, 128], [128, 128, 0], [128, 128, 128], 
+  [128, 64, 0], [0, 128, 128], [0, 128, 0], [0, 0, 128]]
+  
 dataset_type = 'LabelmeFacadeDataset'
 data_root = 'data/labelme_facade/'
 img_norm_cfg = dict(
@@ -6,7 +9,7 @@ img_norm_cfg = dict(
 crop_size = (192, 384)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations'),
+    dict(type='LoadAnnotationsFromPalette', palette=PALETTE),
     dict(type='Resize', img_scale=(512, 384), ratio_range=(0.5, 2.0)),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
@@ -15,6 +18,9 @@ train_pipeline = [
     dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
+]
+gt_pipeline = [
+    dict(type='LoadAnnotationsFromPalette', palette=PALETTE),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -45,7 +51,8 @@ data = dict(
         data_root=data_root,
         img_dir='images',
         ann_dir='labels',
-        pipeline=test_pipeline),
+        pipeline=test_pipeline,
+        gt_pipeline=gt_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
