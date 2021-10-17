@@ -41,3 +41,4 @@ if __name__ == '__main__':
   result = server.infer(img)
   out_file = IMG_FILE[:-4] + '_result.jpg'
   server.save_visualise(img, result, out_file)
+  # mmcv.imwrite(result[0], IMG_FILE[:-4] + '_result_bitmap.jpg')
