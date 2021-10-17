@@ -24,6 +24,9 @@ class LocalModelServer:
   
   def save_visualise(self, img: np.ndarray, result: np.ndarray, out_file: str):
     self.model.show_result(img, result, out_file=out_file, opacity=0.5)
+  
+  def get_visualise(self, img: np.ndarray, result: np.ndarray):
+    return self.model.show_result(img, result, opacity=0.5)
 
 
 # for testing only
