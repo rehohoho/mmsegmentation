@@ -1,5 +1,5 @@
-CONFIG_FILE=configs/ocrnet/ocrnet_hr18_512x1024_20k_labelmefacade.py
-WORK_DIR=work_dirs/ocrnet_hr18_512x1024_20k_labelmefacade
+CONFIG_FILE=configs/ocrnet/ocrnet_hr18_512x1024_80k_labelmefacade.py
+WORK_DIR=work_dirs/ocrnet_hr18_512x1024_80k_labelmefacade
 
 if [ ! -f ${WORK_DIR}/latest.pth ]; then
     printf "Unable to find pytorch checkpoint ${WORK_DIR}/latest.pth"
