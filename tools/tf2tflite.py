@@ -16,6 +16,8 @@ args = parser.parse_args()
 
 # Convert the model
 converter = tf.lite.TFLiteConverter.from_saved_model(args.tf_in)
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+converter.target_spec.supported_types = [tf.float16]
 tflite_model = converter.convert()
 
 # Save the model
