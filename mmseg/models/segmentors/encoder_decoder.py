@@ -258,6 +258,7 @@ class EncoderDecoder(BaseSegmentor):
         if torch.onnx.is_in_onnx_export():
             # our inference backend only support 4D output
             seg_pred = seg_pred.unsqueeze(0)
+            seg_pred = seg_pred.to(torch.uint8)
             return seg_pred
         seg_pred = seg_pred.cpu().numpy()
         # unravel batch dim

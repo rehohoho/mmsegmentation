@@ -27,7 +27,7 @@ Resize supported attributes combination in onnx-tensorflow dependency
 |---------|--------------------------------|---------------|-----------------|---------------------|-------------------|---------------|-----------|
 
 Dependencies:
-git clone htps://github.com/onnx/onnx-tensorflow.git && cd onnx-tensorflow
+git clone https://github.com/onnx/onnx-tensorflow.git && cd onnx-tensorflow
 pip install -e .
 pip install tensorflow
 

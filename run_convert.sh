@@ -9,7 +9,7 @@ fi
 if [ ! -f ${WORK_DIR}/latest.onnx ]; then
     printf "GENERATING ONNX \n\n\n"
 
-    INPUT_IMG=data/labelmefacade/tests/IMG_4303.jpg
+    INPUT_IMG=data/labelmefacade/images/05june05_static_street_boston__p1010736.jpg
     INPUT_SHAPE="384 512"
     RESCALE_SHAPE="384 512"
 
