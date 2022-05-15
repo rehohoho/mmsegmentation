@@ -146,6 +146,48 @@ class TensorRTSegmentor(BaseSegmentor):
         raise NotImplementedError('This method is not implemented.')
 
 
+class TfliteSegmentor(BaseSegmentor):
+
+    def __init__(self, tflite_file: str, cfg: Any, device_id: int):
+        super(TfliteSegmentor, self).__init__()
+        import tensorflow as tf
+        
+        self.interpreter = tf.lite.Interpreter(model_path=tflite_file)
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.input_type = self.input_details[0]['dtype']
+        self.output_details = self.interpreter.get_output_details()
+
+    def extract_feat(self, imgs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def encode_decode(self, img, img_metas):
+        raise NotImplementedError('This method is not implemented.')
+
+    def forward_train(self, imgs, img_metas, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def simple_test(self, img: torch.Tensor, img_meta: Iterable,
+                    **kwargs) -> list:
+        input_data = img.cpu().numpy()
+        self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+        self.interpreter.invoke()
+        seg_pred = self.interpreter.get_tensor(self.output_details[0]['index'])
+        
+        ori_shape = img_meta[0]['ori_shape']
+        if not (ori_shape[0] == seg_pred.shape[-2]
+                and ori_shape[1] == seg_pred.shape[-1]):
+            seg_pred = torch.from_numpy(seg_pred).float()
+            seg_pred = resize(
+                seg_pred, size=tuple(ori_shape[:2]), mode='nearest')
+            seg_pred = seg_pred.long().detach().cpu().numpy()
+        
+        return list(seg_pred[0])
+
+    def aug_test(self, imgs, img_metas, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='mmseg backend test (and eval)')
@@ -154,7 +196,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--backend',
         help='Backend of the model.',
-        choices=['onnxruntime', 'tensorrt'])
+        choices=['onnxruntime', 'tensorrt', 'tflite'])
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--format-only',
@@ -261,6 +303,8 @@ def main():
         model = ONNXRuntimeSegmentor(args.model, cfg=cfg, device_id=0)
     elif args.backend == 'tensorrt':
         model = TensorRTSegmentor(args.model, cfg=cfg, device_id=0)
+    elif args.backend == 'tflite':
+        model = TfliteSegmentor(args.model, cfg=cfg, device_id=0)
 
     model.CLASSES = dataset.CLASSES
     model.PALETTE = dataset.PALETTE
