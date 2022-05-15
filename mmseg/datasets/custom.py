@@ -91,7 +91,8 @@ class CustomDataset(Dataset):
                  classes=None,
                  palette=None,
                  gt_seg_map_loader_cfg=None,
-                 file_client_args=dict(backend='disk')):
+                 file_client_args=dict(backend='disk'),
+                 gt_pipeline=None):
         self.pipeline = Compose(pipeline)
         self.img_dir = img_dir
         self.img_suffix = img_suffix
@@ -105,9 +106,13 @@ class CustomDataset(Dataset):
         self.label_map = None
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(
             classes, palette)
-        self.gt_seg_map_loader = LoadAnnotations(
-        ) if gt_seg_map_loader_cfg is None else LoadAnnotations(
-            **gt_seg_map_loader_cfg)
+        print('\n\n\n\n\n\n\n', gt_pipeline)
+        if not gt_pipeline is None:
+          self.gt_seg_map_loader = Compose(gt_pipeline)
+        else:
+          self.gt_seg_map_loader = LoadAnnotations(
+          ) if gt_seg_map_loader_cfg is None else LoadAnnotations(
+              **gt_seg_map_loader_cfg)
 
         self.file_client_args = file_client_args
         self.file_client = mmcv.FileClient.infer_client(self.file_client_args)
