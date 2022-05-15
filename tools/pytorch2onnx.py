@@ -305,7 +305,7 @@ def parse_args():
         default=None,
         help='input image height and width.')
     parser.add_argument(
-        '--rescale_shape',
+        '--rescale-shape',
         type=int,
         nargs='+',
         default=None,
