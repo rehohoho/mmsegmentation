@@ -150,7 +150,7 @@ class HRModule(BaseModule):
                             Upsample(
                                 scale_factor=2**(j - i),
                                 mode='bilinear',
-                                align_corners=False)))
+                                align_corners=True)))
                 elif j == i:
                     fuse_layer.append(None)
                 else:
@@ -207,7 +207,7 @@ class HRModule(BaseModule):
                         self.fuse_layers[i][j](x[j]),
                         size=x[i].shape[2:],
                         mode='bilinear',
-                        align_corners=False)
+                        align_corners=True)
                 else:
                     y += self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))

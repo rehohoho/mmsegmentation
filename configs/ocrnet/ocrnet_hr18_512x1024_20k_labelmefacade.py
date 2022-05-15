@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/ocrnet_hr18.py', '../_base_/datasets/labelmefacade.py',
-    '../_base_/default_runtime.py', '../_base_/schedules/schedule_40k.py'
+    '../_base_/default_runtime.py', '../_base_/schedules/schedule_20k.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(decode_head=[
@@ -16,7 +16,7 @@ model = dict(decode_head=[
         dropout_ratio=-1,
         num_classes=9,
         norm_cfg=norm_cfg,
-        align_corners=False,
+        align_corners=True,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
     dict(
@@ -29,7 +29,7 @@ model = dict(decode_head=[
         dropout_ratio=-1,
         num_classes=9,
         norm_cfg=norm_cfg,
-        align_corners=False,
+        align_corners=True,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
 ])
