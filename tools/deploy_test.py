@@ -167,20 +167,21 @@ class TfliteSegmentor(BaseSegmentor):
     def forward_train(self, imgs, img_metas, **kwargs):
         raise NotImplementedError('This method is not implemented.')
 
-    def simple_test(self, img: torch.Tensor, img_meta: Iterable,
+    def simple_test(self, img: torch.Tensor, img_meta: Iterable, is_resize=True,
                     **kwargs) -> list:
         input_data = img.cpu().numpy()
         self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
         self.interpreter.invoke()
         seg_pred = self.interpreter.get_tensor(self.output_details[0]['index'])
         
-        ori_shape = img_meta[0]['ori_shape']
-        if not (ori_shape[0] == seg_pred.shape[-2]
-                and ori_shape[1] == seg_pred.shape[-1]):
-            seg_pred = torch.from_numpy(seg_pred).float()
-            seg_pred = resize(
-                seg_pred, size=tuple(ori_shape[:2]), mode='nearest')
-            seg_pred = seg_pred.long().detach().cpu().numpy()
+        if is_resize:
+            ori_shape = img_meta[0]['ori_shape']
+            if not (ori_shape[0] == seg_pred.shape[-2]
+                    and ori_shape[1] == seg_pred.shape[-1]):
+                seg_pred = torch.from_numpy(seg_pred).float()
+                seg_pred = resize(
+                    seg_pred, size=tuple(ori_shape[:2]), mode='nearest')
+                seg_pred = seg_pred.long().detach().cpu().numpy()
         
         return list(seg_pred[0])
 
