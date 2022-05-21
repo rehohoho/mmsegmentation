@@ -231,6 +231,11 @@ class EncoderDecoder(BaseSegmentor):
         Returns:
             Tensor: The output segmentation map.
         """
+        if torch.onnx.is_in_onnx_export():
+            import torchvision
+            img = img.to(torch.float32)
+            img = torchvision.transforms.Normalize(
+                (123.675, 116.28, 103.53), (58.395, 57.12, 57.375))(img)
 
         assert self.test_cfg.mode in ['slide', 'whole']
         ori_shape = img_meta[0]['ori_shape']

@@ -4,6 +4,7 @@ Serving class that consumes images and outputs segmentation bitmap.
 
 import numpy as np
 import torch
+import torchvision
 import mmcv
 
 from mmcv.parallel import collate
@@ -39,17 +40,18 @@ class TfliteModelServer:
         self.model = TfliteSegmentor(checkpoint_file, cfg=self.cfg, device_id=0)
     
     def infer(self, img: np.ndarray, opacity: float = 0.5):
-        test_pipeline = [LoadImage()] + self.cfg.data.test.pipeline[1:]
-        test_pipeline = Compose(test_pipeline)
-        data = dict(img=img)
-        data = test_pipeline(data)
-        data_img = collate([data['img']], samples_per_gpu=1)[0]
-        data_img = resize(data_img, size=(384, 512), mode='bilinear',align_corners=True, warning=False)
-        seg_pred = self.model.simple_test(data_img, data['img_metas'][0], is_resize=False)
+        print('img', img)
+        data_img = torch.from_numpy(img).unsqueeze(0).permute(0,3,1,2)
+        data_img = torchvision.transforms.Resize((512, 384))(data_img)
+        data_img = data_img.to(torch.float32)
+        print('preprocessed', data_img)
+
+        seg_pred = self.model.simple_test(data_img, None, is_resize=False)
         
         seg_pred = torch.from_numpy(seg_pred[0]).float().unsqueeze(0).unsqueeze(0)
         seg_pred = resize(seg_pred, size=tuple(img.shape[:2]), mode='nearest').squeeze().squeeze()
         seg = seg_pred.long().detach().cpu().numpy()
+        print('seg', seg)
         return seg
 
     def save_visualise(self, img: np.ndarray, seg: np.ndarray, out_file: str, opacity: float = 0.5):
@@ -68,7 +70,7 @@ if __name__ == '__main__':
 
   IMG_FILE='data/labelmefacade/tests/Picture2.png'
   CONFIG_FILE='configs/ocrnet/ocrnet_hr18_512x1024_80k_labelmefacade.py'
-  CHECKPOINT_FILE='../bushierbrows.tflite'
+  CHECKPOINT_FILE='work_dirs/ocrnet_hr18_512x1024_80k_labelmefacade/latest.tflite'
   
   if CHECKPOINT_FILE.endswith('tflite'):
     server = TfliteModelServer(config_file=CONFIG_FILE, checkpoint_file=CHECKPOINT_FILE)

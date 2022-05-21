@@ -32,9 +32,15 @@ test_pipeline = [
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
+            # dict(type='Normalize', **img_norm_cfg),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
+            dict(type='Collect', keys=['img'], meta_keys=
+            #     (``filename``, ``ori_filename``, ``ori_shape``,
+            # ``img_shape``, ``pad_shape``, ``scale_factor``, ``flip``,
+            # ``flip_direction``, ``img_norm_cfg``)
+                ('filename', 'ori_filename', 'ori_shape', 'pad_shape', 'scale_factor',
+                'flip', 'flip_direction')
+            ),
         ])
 ]
 data = dict(
@@ -56,6 +62,6 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='tests',
+        img_dir='images',
         ann_dir='labels',
         pipeline=test_pipeline))
